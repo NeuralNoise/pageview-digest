@@ -94,7 +94,7 @@ def application(env, start_response):
         except Exception as e:
             logger.exception(e)
             start_response("400 Bad Request", [("Content-Type", "text/plain")])
-            yield str(e)
+            yield "Your request erred. Check the logs to find out what happened."
 
     else:
         start_response("404 Not Found", [("Content-Type", "text/plain")])
