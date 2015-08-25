@@ -76,7 +76,7 @@ def get_trending_data(site, offset=DEFAULT_OFFSET, limit=DEFAULT_LIMIT):
     except Exception as e:
         logger.exception(e)
 
-    return trending
+    return payload
 
 
 def application(env, start_response):
