@@ -1,0 +1,85 @@
+---
+
+- hosts: all
+
+  sudo: yes
+
+  pre_tasks:
+    - name: make sure that vagrant has the right permissions
+      lineinfile: 'dest=/etc/sudoers regexp="vagrant ALL=(ALL) NOPASSWD: ALL" line="vagrant ALL=(ALL) NOPASSWD: ALL"'
+
+  roles:
+    - python3
+
+    - postgresql
+
+    - memcached
+
+    - uwsgi-emperor
+
+    - avahi
+
+    - role: uwsgi-python-app
+      app_name: pageview_digest
+      system_packages:
+        - "libpq-dev"
+        - "libmemcached-dev"
+        - "git-core"
+      python_packages:
+        - "git+https://github.com/theonion/pageview-digest.git#egg=pageview_digest"
+      env_vars:
+        - "DIGEST_DB_HOST=localhost"
+        - "DIGEST_DB_PORT=5432"
+        - "DIGEST_DB_USER=ingest"
+        - "DIGEST_DB_PASSWD=ingest"
+        - "DIGEST_DB_DBNAME=ingest"
+        - "DIGEST_MEMCACHED_HOSTS=localhost"
+      uwsgi:
+        module: "pageview_digest.wsgi:application"
+        http: "{{ ansible_eth0.ipv4.address }}:80"
+        master: yes
+        gevent: 100
+        workers: 4
+        enable-threads: yes
+        buffer-size: 16384
+      app_enabled: yes
+
+  post_tasks:
+    - name: install pysycopg2
+      apt: name=python-psycopg2 state=present
+
+    - name: creating psql user
+      postgresql_user: name=ingest password=ingest encrypted=yes role_attr_flags=CREATEDB,NOSUPERUSER
+      sudo_user: postgres
+
+    - name: creating psql db
+      postgresql_db: name=ingest state=present owner=ingest
+      sudo_user: postgres
+
+    - name: copy table script
+      template: src=files/tables.sql dest=/var/tables.sql
+
+    - name: execute table script
+      shell: "export PGPASSWORD=ingest; psql -U ingest -h localhost -d ingest < /var/tables.sql;"
+
+    - name: install libcap to enable uwsgi to bind to port 80
+      apt: name=libcap2-bin state=present
+
+    - name: bind uwsgi to port 80
+      command: setcap 'cap_net_bind_service=+ep' /usr/local/bin/uwsgi
+
+    - name: apt install stuff
+      apt: name={{ item }} state=present
+      with_items:
+        - curl
+        - python3
+        - "python3-dev"
+        - "libxml2-dev"
+        - "libxslt-dev"
+        - git
+
+    - name: git clone reporting repo
+      shell: echo "whatever"
+
+    - name: add cronjob to run reports
+      shell: echo "whatever"
