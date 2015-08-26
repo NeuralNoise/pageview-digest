@@ -55,7 +55,7 @@ def get_trending_data(site, offset=DEFAULT_OFFSET, limit=DEFAULT_LIMIT):
 
     naive_now = datetime.now()
     offsetted = naive_now - timedelta(minutes=offset)
-    offsetted.replace(tzinfo=utc)
+    offsetted = offsetted.replace(tzinfo=utc)
     date = offsetted.astimezone(central)
 
     query = "SELECT content_id, SUM(count) as count " \
