@@ -6,10 +6,10 @@ import logging
 import json
 import os
 
+from dateutil import tz
 import pylibmc
 import psycopg2
 import psycopg2.extras
-import pytz
 
 try:
     from urllib.parse import parse_qs
@@ -30,7 +30,8 @@ db_user = os.environ.get("DIGEST_DB_USER", "ingest")
 db_passwd = os.environ.get("DIGEST_DB_PASSWD", "ingest")
 db_dbname = os.environ.get("DIGEST_DB_DBNAME", "ingest")
 
-timezone = pytz.timezone('America/Chicago')
+utc = tz.gettz('UTC')
+central = tz.gettz('America/Chicago')
 
 memcached_hosts = os.environ.get("DIGEST_MEMCACHED_HOSTS", "localhost").split(",")
 memcached_client = pylibmc.Client(memcached_hosts)
@@ -53,14 +54,15 @@ def get_trending_data(site, offset=DEFAULT_OFFSET, limit=DEFAULT_LIMIT):
     cursor = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     naive_now = datetime.now()
-    central_now = timezone.localize(naive_now)
-    date = central_now - timedelta(minutes=offset)
+    offsetted = naive_now - timedelta(minutes=offset)
+    offsetted.replace(tzinfo=utc)
+    date = offsetted.astimezone(central)
 
     query = "SELECT content_id, SUM(count) as count " \
             "FROM {}_trends " \
             "WHERE date >= '{}' " \
             "GROUP BY content_id " \
-            "ORDER BY SUM(count) " \
+            "ORDER BY SUM(count) DESC " \
             "LIMIT {};".format(site, date, limit)
     cursor.execute(query)
     records = cursor.fetchall()
