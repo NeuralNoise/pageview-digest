@@ -50,7 +50,9 @@ def get_trending_data(site, offset=DEFAULT_OFFSET, limit=DEFAULT_LIMIT):
     except Exception as e:
         logger.exception(e)
 
-    connection = psycopg2.connect(database=db_dbname, user=db_user, password=db_passwd, host=db_host, port=db_port)
+    connection = psycopg2.connect(
+        database=db_dbname, user=db_user, password=db_passwd, host=db_host, port=db_port
+    )
     cursor = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     naive_now = datetime.now()
