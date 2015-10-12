@@ -1,0 +1,14 @@
+language: python
+python:
+  - '2.7'
+  - '3.4'
+services:
+  - elasticsearch
+install:
+  - travis_retry pip install -r requirements.txt
+  - travis_retry pip install -r requirements-dev.txt
+script:
+  - py.test --cov pageview_digest --cov-report term-missing
+after_success:
+  - coveralls
+sudo: false
