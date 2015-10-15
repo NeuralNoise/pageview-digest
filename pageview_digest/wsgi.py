@@ -55,6 +55,10 @@ def get_trending_data(site, offset=DEFAULT_OFFSET, limit=DEFAULT_LIMIT):
     )
     cursor = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
+    if offset and not isinstance(offset, int):
+        if isinstance(offset, str) and offset.isdigit():
+            offset = int(offset)
+
     naive_now = datetime.now()
     offsetted = naive_now - timedelta(minutes=offset)
     offsetted = offsetted.replace(tzinfo=utc)
