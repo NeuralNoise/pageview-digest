@@ -68,6 +68,11 @@ class TestWSGIApplication:
         resp = requests.get(testserver.trending_url, params={'site': 'theonion', 'offset': '50'})
         assert resp.status_code == 200
 
+    def test_limit_parameter_success(self, testserver):
+        """assert app returns a 200 when provided a limit parameter"""
+        resp = requests.get(testserver.trending_url, params={'site': 'theonion', 'limit': '20'})
+        assert resp.status_code == 200
+
     def test_response_not_found(self, testserver):
         """assert any request not at /trending.json returns 400"""
         resp = requests.get(testserver.url)
