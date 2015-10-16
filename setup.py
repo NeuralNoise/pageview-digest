@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
-from setuptools.command.test import test as TestCommand # noqa
-
 from setuptools import setup
+from setuptools.command.test import test as TestCommand  # noqa
+import sys
 
 dev_requires = [
     "flake8>=2.0,<2.1",
