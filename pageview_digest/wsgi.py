@@ -88,8 +88,9 @@ def application(env, start_response):
     if path == "/trending.json" and "site" in params:
         try:
             site = params.get("site", [None])[0]
-            offset = params.get("offset", [DEFAULT_OFFSET])[0]
-            limit = params.get("limit", [DEFAULT_LIMIT])[0]
+            offset = int(params.get("offset", [DEFAULT_OFFSET])[0])
+            limit = int(params.get("limit", [DEFAULT_LIMIT])[0])
+
             payload = get_trending_data(site, offset, limit)
             start_response("200 OK", [("Content-Type", "application/json")])
             yield payload
